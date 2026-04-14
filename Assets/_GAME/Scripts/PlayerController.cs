@@ -1,29 +1,27 @@
-using System;
 using UnityEngine;
 
+[RequireComponent(typeof(Rigidbody))]
 public class PlayerController : MonoBehaviour
 {
-    [SerializeField] private float moveSpeed;
-    [SerializeField] private float rotationSpeed;
+    [SerializeField] private float moveSpeed = 8f;
+    [SerializeField] private float rotationSpeed = 15f; 
     
     private Rigidbody _rb;
     private Vector3 _movementInput;
-    [Header("Animation")]
+    private PlayerAnimBinding _playerAnim;
     
-    private Animator _animator;
-
+    
     private void Awake()
     {
         _rb = GetComponent<Rigidbody>();
-        _animator = GetComponent<Animator>();
         _rb.freezeRotation = true;
+        _playerAnim = GetComponent<PlayerAnimBinding>();
     }
 
     private void Update()
     {
-        HandleInput();
+        _movementInput = new Vector3(Input.GetAxisRaw("Horizontal"), 0f, Input.GetAxisRaw("Vertical")).normalized;
     }
-    
     
     private void FixedUpdate()
     {
@@ -31,17 +29,16 @@ public class PlayerController : MonoBehaviour
         RotatePlayer();
     }
 
-    private void HandleInput()
-    {
-        _movementInput = new Vector3(Input.GetAxisRaw("Horizontal"), 0, Input.GetAxisRaw("Vertical")).normalized;
-    }
-
     private void MovePlayer()
     {
         Vector3 movement = _movementInput * moveSpeed;
-        if (_rb.linearVelocity.magnitude > 0)
+        if (movement.magnitude >= 0.1f)
         {
-            _animator.SetTrigger("Move");
+            _playerAnim.UpdateMoveAnim(1f);
+        }
+        else
+        {
+            _playerAnim.UpdateMoveAnim(0f);
         }
         _rb.linearVelocity = new Vector3(movement.x, _rb.linearVelocity.y, movement.z);
     }
@@ -51,8 +48,7 @@ public class PlayerController : MonoBehaviour
         if (_movementInput.magnitude >= 0.1f)
         {
             float targetAngle = Mathf.Atan2(_movementInput.x, _movementInput.z) * Mathf.Rad2Deg;
-            Quaternion targetRotation = Quaternion.Euler(0f,targetAngle,0f);
-            
+            Quaternion targetRotation = Quaternion.Euler(0f, targetAngle, 0f);
             _rb.MoveRotation(Quaternion.Slerp(_rb.rotation, targetRotation, rotationSpeed * Time.fixedDeltaTime));
         }
     }
