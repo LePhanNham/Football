@@ -12,6 +12,7 @@ public class GameManager : SingletonMono<GameManager>
         
     }
 
+
     public Transform GetTargetMinDistanceWithBall(Transform ball)
     {
         if (targetList == null || targetList.Count == 0 || ball == null)
@@ -51,7 +52,6 @@ public class GameManager : SingletonMono<GameManager>
         foreach (var ball in ballList)
         {
             if (ball == null) continue;
-
             float sqrDist = (ball.position - playerPos).sqrMagnitude;
 
             if (sqrDist > maxSqrDist)

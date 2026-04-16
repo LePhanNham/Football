@@ -1,24 +1,26 @@
 ﻿using System;
+using System.Collections;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody))]
 public class Ball : MonoBehaviour
 {
     private Rigidbody _rb;
-
     [Header("Setting")]
     [SerializeField] private float maxSpeed = 10f;
     [SerializeField] private float drag = 0.5f;
-
+    // private bool _used =  false;
+    //
+    // public bool Used
+    // {
+    //     get { return _used; }
+    //     set { _used = value; }
+    // }
     private void Awake()
     {
         _rb = GetComponent<Rigidbody>();
     }
-
-    private void FixedUpdate()
-    {
-        // LimitSpeed();
-    }
+    
 
     public void Kick(Vector3 direction, float force)
     {
@@ -41,8 +43,21 @@ public class Ball : MonoBehaviour
     {
         if (other.gameObject.CompareTag(CONSTANT.GameTag.GoalTag))
         {
-            CameraFollower.Instance.OnBallGoal();
-            Debug.Log(other.gameObject.name);
+            OnGoal(transform);
         }
     }
+    
+    public void OnGoal(Transform ball)
+    {
+        PlayerAction.HandleGoal(ball.position);
+        StartCoroutine(GoalEffectRoutine());
+        CameraFollower.Instance.OnBallGoal();
+    }
+    IEnumerator GoalEffectRoutine()
+    {
+        Time.timeScale = 0.5f;
+        yield return new WaitForSecondsRealtime(1f);
+        Time.timeScale = 1f;
+    }
+    
 }

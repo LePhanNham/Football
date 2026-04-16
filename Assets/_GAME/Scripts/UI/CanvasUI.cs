@@ -22,7 +22,6 @@ public abstract class CanvasUI : MonoBehaviour
         RectTransform = GetComponent<RectTransform>();
     }
 
-    // Khởi tạo trạng thái ban đầu (gọi lúc mới vào game)
     public virtual void Setup()
     {
         gameObject.SetActive(false);
@@ -38,7 +37,7 @@ public abstract class CanvasUI : MonoBehaviour
         CanvasGroup.alpha = 0f;
         RectTransform.localScale = Vector3.one * 0.8f;
 
-        CanvasGroup.DOFade(1f, animDuration).SetUpdate(true); // SetUpdate(true) để UI vẫn chạy dù Time.timeScale = 0
+        CanvasGroup.DOFade(1f, animDuration).SetUpdate(true);
         RectTransform.DOScale(Vector3.one, animDuration)
             .SetEase(showEase)
             .SetUpdate(true)

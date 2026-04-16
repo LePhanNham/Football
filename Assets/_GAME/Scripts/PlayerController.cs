@@ -22,11 +22,13 @@ public class PlayerController : MonoBehaviour
     private void OnEnable()
     {
         PlayerAction.OnKickHandle += KickBall;
+        PlayerAction.OnAutoKick += AutoKickBall;
     }
 
     private void OnDisable()
     {
         PlayerAction.OnKickHandle -= KickBall;
+        PlayerAction.OnAutoKick -= AutoKickBall;
     }
 
     private void Update()
@@ -75,5 +77,16 @@ public class PlayerController : MonoBehaviour
         Vector3 dir = (GameManager.Instance.GetTargetMinDistanceWithBall(ball.transform).position - ball.transform.position).normalized;
         ball.Kick(dir, 20f);
         
+    }
+
+    private void AutoKickBall()
+    {
+        _playerAnim.UpdateKickAnim();
+        Ball ball = GameManager.Instance
+            .GetBallMaxDistanceWithPlayer(transform)
+            .GetComponent<Ball>();
+        if (ball ==null) return;
+        Vector3 dir = (GameManager.Instance.GetTargetMinDistanceWithBall(ball.transform).position - ball.transform.position).normalized;
+        ball.Kick(dir, 20f);
     }
 }
