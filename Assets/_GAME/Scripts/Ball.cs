@@ -6,9 +6,11 @@ using UnityEngine;
 public class Ball : MonoBehaviour
 {
     private Rigidbody _rb;
+    private bool _hasScored;
     [Header("Setting")]
     [SerializeField] private float maxSpeed = 10f;
     [SerializeField] private float drag = 0.5f;
+    [SerializeField] private float deactivateDelayAfterGoal = 2.5f;
     // private bool _used =  false;
     //
     // public bool Used
@@ -20,12 +22,16 @@ public class Ball : MonoBehaviour
     {
         _rb = GetComponent<Rigidbody>();
     }
+
+    public bool CanBeKicked => !_hasScored;
+    public bool CanAutoKick => _rb != null && _rb.IsSleeping();
     
 
     public void Kick(Vector3 direction, float force)
     {
-        CameraFollower.Instance.FollowBall(transform);
+        _rb.WakeUp();
         _rb.linearVelocity = Vector3.zero;
+        _rb.angularVelocity = Vector3.zero;
         _rb.AddForce(direction.normalized * force, ForceMode.Impulse);
     }
 
@@ -41,8 +47,12 @@ public class Ball : MonoBehaviour
 
     private void OnCollisionEnter(Collision other)
     {
+        if (_hasScored)
+            return;
+
         if (other.gameObject.CompareTag(CONSTANT.GameTag.GoalTag))
         {
+            _hasScored = true;
             OnGoal(transform);
         }
     }
@@ -50,8 +60,16 @@ public class Ball : MonoBehaviour
     public void OnGoal(Transform ball)
     {
         PlayerAction.HandleGoal(ball.position);
+        CameraFollower.Instance?.FollowBall(transform);
+        StartCoroutine(DeactivateBallAfterGoalRoutine());
         StartCoroutine(GoalEffectRoutine());
-        CameraFollower.Instance.OnBallGoal();
+        CameraFollower.Instance?.OnBallGoal();
+    }
+
+    private IEnumerator DeactivateBallAfterGoalRoutine()
+    {
+        yield return new WaitForSecondsRealtime(deactivateDelayAfterGoal);
+        gameObject.SetActive(false);
     }
     IEnumerator GoalEffectRoutine()
     {

@@ -52,6 +52,10 @@ public class GameManager : SingletonMono<GameManager>
         foreach (var ball in ballList)
         {
             if (ball == null) continue;
+            Ball ballComponent = ball.GetComponent<Ball>();
+            if (ballComponent == null || !ballComponent.CanBeKicked || !ballComponent.CanAutoKick)
+                continue;
+
             float sqrDist = (ball.position - playerPos).sqrMagnitude;
 
             if (sqrDist > maxSqrDist)
@@ -77,6 +81,10 @@ public class GameManager : SingletonMono<GameManager>
         foreach (var ball in ballList)
         {
             if (ball == null) continue;
+            Ball ballComponent = ball.GetComponent<Ball>();
+            if (ballComponent == null || !ballComponent.CanBeKicked)
+                continue;
+
             float sqrDist = (ball.position - playerPos).sqrMagnitude;
 
             if (sqrDist < minSqrDist)
@@ -87,5 +95,27 @@ public class GameManager : SingletonMono<GameManager>
         }
 
         return closest;
+    }
+
+    public bool HasAnyAvailableBall(bool requireSleeping)
+    {
+        if (ballList == null || ballList.Count == 0)
+            return false;
+
+        foreach (var ball in ballList)
+        {
+            if (ball == null) continue;
+
+            Ball ballComponent = ball.GetComponent<Ball>();
+            if (ballComponent == null || !ballComponent.CanBeKicked)
+                continue;
+
+            if (requireSleeping && !ballComponent.CanAutoKick)
+                continue;
+
+            return true;
+        }
+
+        return false;
     }
 }

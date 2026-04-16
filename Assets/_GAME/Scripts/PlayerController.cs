@@ -68,25 +68,72 @@ public class PlayerController : MonoBehaviour
 
     private void KickBall()
     {
-        _playerAnim.UpdateKickAnim();
-        Ball ball = GameManager.Instance
-            .GetBallMinDistanceWithPlayer(transform)
-            .GetComponent<Ball>();
+        if (!CanKickNow())
+        {
+            PlayerAction.HandleKickBlocked("Waiting...");
+            return;
+        }
 
-        if (ball ==null) return;
-        Vector3 dir = (GameManager.Instance.GetTargetMinDistanceWithBall(ball.transform).position - ball.transform.position).normalized;
+        GameManager gameManager = GameManager.Instance;
+        Transform ballTransform = gameManager.GetBallMinDistanceWithPlayer(transform);
+        if (ballTransform == null)
+        {
+            PlayerAction.HandleKickBlocked("NO BALL AVAILABLE");
+            return;
+        }
+
+        Ball ball = ballTransform.GetComponent<Ball>();
+        if (ball == null)
+            return;
+
+        Transform target = gameManager.GetTargetMinDistanceWithBall(ball.transform);
+        if (target == null)
+            return;
+
+        _playerAnim.UpdateKickAnim();
+        Vector3 dir = (target.position - ball.transform.position).normalized;
         ball.Kick(dir, 20f);
         
     }
 
     private void AutoKickBall()
     {
+        if (!CanKickNow())
+        {
+            PlayerAction.HandleKickBlocked("Waiting...");
+            return;
+        }
+
+        GameManager gameManager = GameManager.Instance;
+        Transform ballTransform = gameManager.GetBallMaxDistanceWithPlayer(transform);
+        if (ballTransform == null)
+        {
+            if (gameManager.HasAnyAvailableBall(false))
+            {
+                PlayerAction.HandleKickBlocked("Ball is not ready for auto kick yet.");
+            }
+            else
+            {
+                PlayerAction.HandleKickBlocked("NO BALL AVAILABLE");
+            }
+            return;
+        }
+
+        Ball ball = ballTransform.GetComponent<Ball>();
+        if (ball == null)
+            return;
+
+        Transform target = gameManager.GetTargetMinDistanceWithBall(ball.transform);
+        if (target == null)
+            return;
+
         _playerAnim.UpdateKickAnim();
-        Ball ball = GameManager.Instance
-            .GetBallMaxDistanceWithPlayer(transform)
-            .GetComponent<Ball>();
-        if (ball ==null) return;
-        Vector3 dir = (GameManager.Instance.GetTargetMinDistanceWithBall(ball.transform).position - ball.transform.position).normalized;
+        Vector3 dir = (target.position - ball.transform.position).normalized;
         ball.Kick(dir, 20f);
+    }
+
+    private bool CanKickNow()
+    {
+        return CameraFollower.Instance == null || CameraFollower.Instance.IsPlayerReady;
     }
 }
