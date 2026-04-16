@@ -1,18 +1,54 @@
-using System;
 using UnityEngine;
+using System.Collections;
+using Base.Singleton;
+using Unity.Cinemachine;
 
-public class CameraFollower : MonoBehaviour
+public class CameraFollower : SingletonMono<CameraFollower>
 {
-    [SerializeField] private Transform target;
-    [SerializeField] private Vector3 offset;
-    [SerializeField] private float smoothSpeed;
+    [SerializeField] private CinemachineCamera camPlayer;
+    [SerializeField] private CinemachineCamera camBall;
 
-    private void LateUpdate()
+    [SerializeField] private float blendDelay = 2f;
+
+    private Coroutine _returnRoutine;
+
+    protected override void OnAwake()
     {
-        if (target == null) return;
-        
-        Vector3 desiredPosition = target.position + offset;
-        transform.position = Vector3.Lerp(transform.position, desiredPosition, smoothSpeed * Time.deltaTime);
-        transform.LookAt(target);
+        SetFollowPlayer();
+    }
+
+    public void FollowBall(Transform ball)
+    {
+        if (ball == null) return;
+
+        camBall.Follow = ball;
+        camBall.Priority = 20;
+        camPlayer.Priority = 10;
+        if (_returnRoutine != null)
+        {
+            StopCoroutine(_returnRoutine);
+            _returnRoutine = null;
+        }
+    }
+
+    public void OnBallGoal()
+    {
+        if (_returnRoutine != null)
+            StopCoroutine(_returnRoutine);
+
+        _returnRoutine = StartCoroutine(ReturnToPlayer());
+    }
+
+    IEnumerator ReturnToPlayer()
+    {
+        yield return new WaitForSeconds(blendDelay);
+
+        SetFollowPlayer();
+    }
+
+    private void SetFollowPlayer()
+    {
+        camPlayer.Priority = 20;
+        camBall.Priority = 10;
     }
 }

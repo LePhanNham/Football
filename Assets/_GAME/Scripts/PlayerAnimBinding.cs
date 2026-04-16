@@ -10,6 +10,7 @@ public class PlayerAnimBinding : MonoBehaviour
 
     private int _speedHash;
     private int _normalHash;
+    private int _kickHash;
 
     private void Awake()
     {
@@ -26,6 +27,7 @@ public class PlayerAnimBinding : MonoBehaviour
     {
         _speedHash = Animator.StringToHash("Blend");
         _normalHash = Animator.StringToHash("normal");
+        _kickHash = Animator.StringToHash("kick");
     }
     
     public void UpdateMoveAnim(float speedValue)
@@ -33,5 +35,8 @@ public class PlayerAnimBinding : MonoBehaviour
         animator.SetFloat(_speedHash, speedValue);
     }
 
-    
+    public void UpdateKickAnim()
+    {
+        animator.SetTrigger(_kickHash);
+    }
 }

@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody))]
@@ -18,9 +19,19 @@ public class PlayerController : MonoBehaviour
         _playerAnim = GetComponent<PlayerAnimBinding>();
     }
 
+    private void OnEnable()
+    {
+        PlayerAction.OnKickHandle += KickBall;
+    }
+
+    private void OnDisable()
+    {
+        PlayerAction.OnKickHandle -= KickBall;
+    }
+
     private void Update()
     {
-        _movementInput = new Vector3(Input.GetAxisRaw("Horizontal"), 0f, Input.GetAxisRaw("Vertical")).normalized;
+        _movementInput = new Vector3(Input.GetAxisRaw(CONSTANT.InputHandle.HorizontalInput), 0f, Input.GetAxisRaw(CONSTANT.InputHandle.VerticalInput)).normalized;
     }
     
     private void FixedUpdate()
@@ -51,5 +62,18 @@ public class PlayerController : MonoBehaviour
             Quaternion targetRotation = Quaternion.Euler(0f, targetAngle, 0f);
             _rb.MoveRotation(Quaternion.Slerp(_rb.rotation, targetRotation, rotationSpeed * Time.fixedDeltaTime));
         }
+    }
+
+    private void KickBall()
+    {
+        _playerAnim.UpdateKickAnim();
+        Ball ball = GameManager.Instance
+            .GetBallMinDistanceWithPlayer(transform)
+            .GetComponent<Ball>();
+
+        if (ball ==null) return;
+        Vector3 dir = (GameManager.Instance.GetTargetMinDistanceWithBall(ball.transform).position - ball.transform.position).normalized;
+        ball.Kick(dir, 20f);
+        
     }
 }
