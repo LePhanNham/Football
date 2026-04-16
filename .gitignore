@@ -101,3 +101,15 @@ Assets/InitTestScene*.unity*
 # Crashlytics
 # =========================
 crashlytics-build.properties
+# Unity cache (Rider / VS)
+*.csproj.lscache
+# Rider / JetBrains
+.idea/
+
+# VS Code
+.vscode/
+
+# Generated project files
+*.csproj
+*.sln
+*.slnx
